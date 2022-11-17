@@ -1,0 +1,41 @@
+###싱글턴 패턴
+특정 클래스에 대해 @Bean이 정의되면 스프링 컨테이너는 해당 클래스에 대해 하나의 인스턴스를 생성합니다. bean이 호출될 때마다 스프링은 이미 생성된 공유 인스턴스를 반환하는 방식을 사용합니다.
+```
+@Repository
+public interface QuestRepository extends JpaRepository<Quest, Long>, CustomQuestRepository {
+
+     Quest findByQuestId(Long questId);
+
+     void deleteByQuestId(Long questId);
+}
+```
++
+bean : 일반 객체와 차이점은 없으나 spring containter에서 만들어지는 객체를 부르는 명칭
+일반 객체와 차이가 없음에도 bean을 사용하는 이유는?
+bean은 singleton으로 만들어져 어디서든 이미 생성된 객체를 사용할 수 있기 때문에 클래스의 변경사항을 굳이 수정하지 않아도 됩니다. 반면 bean이 아닌 일반 객체는 의존성 주입이 되지 않아 클래스를 변경해야 하는 상황일 때 직접 다른 연관 클래스를 수정해야 한다는 불편한 점이 존재합니다. 이러한 이유로 인해 bean의 사용도가 일반적으로 높습니다.
+
+
+###팩토리 메소드 패턴
+객체 생성 처리를 서브 클래스로 분리하여 처리하도록 하는 캡슐화 패턴입니다. 객체의 생성 코드를 별도의 클래스/메서드로 분리함으로써 객체 생성의 변화에 대비하여 유용하게 사용할 수 있습니다.
+=> interface를 정의하고 interface를 상속받아 구현하는 클래스 정의
+
+스프링에서는 사용되는 용도에 따라 폴더를 controller, dto, entity, repository, service로 나눕니다. 그 중 repository 폴더는 반환을 요청받은 값을 불러오는 중간다리 역할을 하는데 여기에서도 customrepository, repository, repositoryImpl로 나누어 각 역할을 수행합니다. 여기에서 customrepository는 다른 파일에 저장되어 있는 값을 반환할 수 있는 인터페이스가 저장되어 있는 파일이고 그 외의 파일들은 customrepository의 인터페이스를 implement(상속)하여 데이터베이스에 있는 값과 백엔드 코드에 있는 값을 연동합니다.
+<customrepository code>
+```
+public interface CustomQuestRepository {
+    List<FindQuestListDto> findQuestList(String category);
+
+    FindQuestListDto findQuestListBy(Long questId, Long memberId);
+
+}
+```
+<repository code>
+```
+@Repository
+public interface QuestRepository extends JpaRepository<Quest, Long>, CustomQuestRepository {
+
+     Quest findByQuestId(Long questId);
+
+     void deleteByQuestId(Long questId);
+}
+```
